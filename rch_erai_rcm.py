@@ -1,7 +1,8 @@
 ###########################################
 #############HEADER#######################
-# This python code will read in multiple output.rch files from SWAT, subset the data based on subbasins of choice, and create new text files containing data  
-#    corresponding to teach subbasin
+# This python code will read in multiple output.rch files from SWAT, subset the data based on subbasins of choice, and create a "first glance" hydrograph
+#
+# coming soon:   new text files containing data corresponding to teach subbasin
 #
 #  by: alex caruthers 
 ##########################################
@@ -59,6 +60,13 @@ for i in range(len(col_array)):
 col_tuple = list(zip(istart,iend)) #create the pairs! of istart,iend 
 print(col_tuple) # double check this worked !
 
+
+############ NOTE #################################
+#
+# change the name of the "dataframe" and the path to the output.sub file" 
+#
+#########################################################3
+
 #### read in each data file -> file name, header = 0; names =header names, colspecs = list of start/end spaces, skiprows = number of lines to skip for headers in file 
 names = heds
 
@@ -78,10 +86,10 @@ df_erairegcm25_raw = pd.read_fwf('SWAToutput_UMRB_ISU/output_ERAIRegCM25km_cal_8
 
 df_erairegcm50_raw = pd.read_fwf('SWAToutput_UMRB_ISU/output_ERAIRegCM50km_cal_8910.rch', header=0, names=names, colspecs=col_tuple, skiprows=8)
 
+
 #######################################################################################################################
 #
 # Now that the files have been read, we need to create a date column 
-# The text files are 2-d, but we want them to either be 3d, or separated by subbasin 
 # Files have month, year as separate columns; also yearly averages after each year (mon=1-12,year)
 # Also a set of averages for full simulation at the end 
 #
@@ -90,8 +98,9 @@ df_erairegcm50_raw = pd.read_fwf('SWAToutput_UMRB_ISU/output_ERAIRegCM50km_cal_8
 ########################
 #
 # lets start by removing the yearly averages and the averages for the simulation 
-# remove all the lines where month is greater than 12 
+# drop all the lines where month is greater than 12 
 #
+# NOTE #### change dataframe names 
 ##############################################
 
 
@@ -107,14 +116,19 @@ df_erairegcm50 = df_erairegcm50_raw.drop(df_erairegcm50_raw[df_erairegcm50_raw.M
 
 ##############################################
 # add year to data frame
-# 119 subbasins, 12 months of data plus the stupid yearly averages 
-# so year repeats every 119 * 12 = 1428
-# so 1991-2010 repeats 1547 times
+# 119 subbasins, 12 months of data  
+# so year repeats every 119 * 12 = 1428s
 
+
+######### NOTE #############
+#
+# change the number of years from 1991,2011 to the start, end of your analysis period 
+#
+#######################################
 
 yrs = [] # create new array for years
 
-for i in range(1991,2011,1): #repeat the year for 119 subbasins * 13 (12 months plus 1 annual average)
+for i in range(1991,2011,1): #repeat the year for 119 subbasins * 12
        yr1 = np.repeat(i,1428)
        yrs = np.append(yrs,yr1)
 
@@ -130,6 +144,7 @@ df_erairegcm25['YEAR'] = yrs
 df_erairegcm50['YEAR'] = yrs
 
 ######### create a new column thats YYYYMM 
+##### NOTE - only need to change dataframe name, the rest should be the same 
 
 ###                   create datetime       year    month        needs a day       coerce to fix the last rows     YYYY-MM
 df_prism['DATE'] = pd.to_datetime(df_prism[['YEAR','MONTH']].assign(Day=1), errors = "coerce").dt.strftime('%Y%m')
@@ -140,6 +155,12 @@ df_eraiwrf50['DATE'] = pd.to_datetime(df_eraiwrf50[['YEAR','MONTH']].assign(Day=
 df_erairegcm12['DATE'] = pd.to_datetime(df_erairegcm12[['YEAR','MONTH']].assign(Day=1), errors = "coerce").dt.strftime('%Y%m')
 df_erairegcm25['DATE'] = pd.to_datetime(df_erairegcm25[['YEAR','MONTH']].assign(Day=1), errors = "coerce").dt.strftime('%Y%m')
 df_erairegcm50['DATE'] = pd.to_datetime(df_erairegcm50[['YEAR','MONTH']].assign(Day=1), errors = "coerce").dt.strftime('%Y%m')
+
+# now we have a dataframe (an array of data) that only contains the data we want
+#
+# to see what is in one of these files, print the dataframe
+
+print(df_prism)
 
 
 ############################################################################################################################################3
