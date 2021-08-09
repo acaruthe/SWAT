@@ -130,8 +130,6 @@ df_erairegcm25['YEAR'] = yrs
 df_erairegcm50['YEAR'] = yrs
 
 ######### create a new column thats YYYYMM 
-#### the last date is just number of years in simulation, which doesnt fit the YYYY-MM format, so coerce to fix that error
-##### NOTE -> will need to fix this in order to use subbasin averages -> maybe send to a different file? 
 
 ###                   create datetime       year    month        needs a day       coerce to fix the last rows     YYYY-MM
 df_prism['DATE'] = pd.to_datetime(df_prism[['YEAR','MONTH']].assign(Day=1), errors = "coerce").dt.strftime('%Y%m')
@@ -149,23 +147,14 @@ df_erairegcm50['DATE'] = pd.to_datetime(df_erairegcm50[['YEAR','MONTH']].assign(
 # Now we can subbset the data based on subbasin ! Use SUB = 100 as test, Grafton 
 #
 #####################################################################
-#rearrange data using dataframe multi-index; using SUBBASIN and DATE
 
-#pd.MultiIndex.from_frame(df_prism, names = ['SUB', 'DATE'])
+grafton_prism_raw = df_prism[df_prism["SUB"] == 100] 
 
-print(df_prism)
-
-
-
-grafton_prism_raw = df_prism[df_prism["SUB"] == 100]  #.to_xarray()
-
-
+#this sets the "index" as the date which is useful in plotting 
 grafton_prism = grafton_prism_raw.set_index(['DATE'])
 
-print(grafton_prism)
 
-print(grafton_prism["FLOW_OUTcms"])
-
+# make a hydrograph! the y axis is streamflow, and x axis is the index, or the date
 
 grafton_prism.plot( y = 'FLOW_OUTcms', use_index=True)
 plt.show()
